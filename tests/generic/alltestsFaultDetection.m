@@ -1,0 +1,30 @@
+% 2D tests
+testCaseFaultApprox2D_01;
+testCaseFaultApprox2D_02;
+testCaseFaultApprox2D_03;
+testCaseFaultApprox2D_04;
+testCaseFaultApprox2D_05;
+testCaseFaultApprox2D_06;
+testCaseFaultApprox2D_07;
+testCaseFaultApprox2D_08;
+testCaseFaultApprox2D_09;
+testCaseFaultApprox2D_10;
+testCaseFaultApprox2D_11;
+testCaseFaultApprox2D_12;
+testCaseFaultApprox2D_13;
+testCaseFaultApprox2D_14;
+testCaseFaultApprox2D_15;
+testCaseFaultApprox2D_16;
+testCaseFaultApprox2D_17;
+
+% 3D tests
+testCaseFaultApprox3D_01;
+testCaseFaultApprox3D_02;
+testCaseFaultApprox3D_03;
+testCaseFaultApprox3D_04;
+testCaseFaultApprox3D_05;
+testCaseFaultApprox3D_06;
+testCaseFaultApprox3D_07;
+testCaseFaultApprox3D_08;
+testCaseFaultApprox3D_09;
+
