@@ -32,7 +32,7 @@ ExtendedStats = Statistics;
 
 PointSet = CreateHaltonSet(200,3,1);
 
-Subdomains = faultApproximation(PointSet, MyProb, MySettings);
+Subdomains = faultApprox(PointSet, MyProb, MySettings);
 
 % write final point sets
 for iclass = 1:3
