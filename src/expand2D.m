@@ -107,7 +107,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
     % for computing valid point pairs as starting values for bisection
     alpha = FaultApproxParams.alpha;
 
-    % points closer as epstol are regarded as identical
+    % Points closer than epstol are regarded as identical.
     epstol = FaultApproxParams.eps;
     
     [npoints, ndim] = size(PointsIclass);
@@ -542,7 +542,6 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 if (LeftDomain(iclass, jclass, icomp) < 0 && ~bdomainLeft)
                     LeftDomain(iclass, jclass, icomp) = 0;
                 end
-                %finished = true;
             end      
         end
     end

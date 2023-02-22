@@ -45,7 +45,7 @@
 % Author: Matthias Grajewski (grajewski@fh-aachen.de)
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
-function [curvature, NewPoints] = computeCurvature(PointSet, iidx, epsTol)
+function [curvature, NewPoints] = estimateCurvature(PointSet, iidx, epsTol)
     maxIt = 30;
     NewPoints = 0;
 
@@ -58,7 +58,7 @@ function [curvature, NewPoints] = computeCurvature(PointSet, iidx, epsTol)
     end
     
     if (ndim ~= 2)
-        error('computeCurvature works in 2d only.')
+        error('estimateCurvature works in 2d only.')
     end
     
     if (iidx < 1 || iidx > numPoints)

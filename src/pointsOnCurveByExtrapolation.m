@@ -93,8 +93,8 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
         % estimate curvature (with safety factor). As PointsOnCurve are mean
         % values of the point pairs, their maximal deviation from the true
         % fault line is FaultApproxParams.abstolBisection.
-        curv = computeCurvature(PointsShifted, numPointsOnCurve, FaultApproxParams.abstolBisection) + ...
-               computeCurvature(PointsShifted, numPointsOnCurve-1, FaultApproxParams.abstolBisection);
+        curv = estimateCurvature(PointsShifted, numPointsOnCurve, FaultApproxParams.abstolBisection) + ...
+               estimateCurvature(PointsShifted, numPointsOnCurve-1, FaultApproxParams.abstolBisection);
 
         if (curv > 1e-10)
             lmax = 2*(1 + sqrt(1 + 4*curv*FaultApproxParams.errMax));
