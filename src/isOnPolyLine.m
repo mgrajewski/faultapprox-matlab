@@ -46,17 +46,19 @@ function onLineSegment = isOnPolyLine(PolyLine, PointSetTest)
 
                 % square of the length of line segment
                 segLengthSq = LineSegs(iseg,:)*LineSegs(iseg,:)';
-                % If a segment is shorter than 1e-10, we can not seriously
-                % decide if a point is close to this line segment. In such 
-                % case, we just skip this line segment und continue with
-                % the next one.
+                % The projection-based test is reliable only for segments
+                % longer than eps_len. If the segment is too small, we
+                % just skip this line segment und continue with the next
+                % one.
                 if segLengthSq > epsLenSq
                     alpha = (PointSetTest(ipoint,:) - PolyLine(iseg,:))*LineSegs(iseg,:)'/segLengthSq;
                     
+                    % If so, the projected test point is on the current
+                    % line segment.
                     if (0 <= alpha && alpha <= 1)
                         dist = PointSetTest(ipoint,:) - PolyLine(iseg,:) - alpha*LineSegs(iseg,:);
 
-                        % square of the distance.
+                        % square of the distance
                         dist_sq = dist*dist';
                         
                         if (dist_sq < epsDistSq)

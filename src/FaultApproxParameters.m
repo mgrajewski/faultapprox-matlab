@@ -45,7 +45,7 @@ classdef FaultApproxParameters
         % line segments with error larger than errMax are refined
         errMax = 0.15;
         
-        % parameters for computeSingleSurfacePoint
+        % parameters for singleTripletByBisection
         
         %stopping criterion for bisection algorithm
         abstolBisection = 1e-3;

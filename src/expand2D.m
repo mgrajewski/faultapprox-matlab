@@ -79,11 +79,10 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
     finished = false;
     bdomainLeft = false;
 
-    % distVec contains actual distance between consecutive points
     numPoints = size(PointsIclass, 1);
 
     if numPoints < 2
-        warning('Not enough points provided for expanding the fault line.')
+        warning('Not enough triplets provided for expanding the fault line.')
         IdxPointsEnlarged = IdxPoints;
         npoints = numPoints;
         resort = false;
@@ -91,6 +90,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
         return
     end
 
+    % distVec contains actual distance between consecutive points.
     distVecAux = (PointsIclass(IdxPoints(1:numPoints-1),1) - ...
                   PointsIclass(IdxPoints(2:numPoints),1)).^2 + ...
                  (PointsIclass(IdxPoints(1:numPoints-1),2) - ...
@@ -133,6 +133,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
         % expand at the end
         elseif (mode == 1)
             IdxSet = max(1, npoints - (numPointsOnCurve-1)): npoints;
+        else
+            error('Invalid mode of operation in expand2D.')
         end
         numPointsToInterpolate = size(IdxSet,2);
         PointsOnFault = 0.5*(PointsIclass(IdxPointsEnlarged(IdxSet), :) + ...
@@ -140,7 +142,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
 
         % extrapolate current points
         [NewPointOnFault, avg_dist, extraParam, DataPars, Q, xmean, coeffs] = ...
-            pointsOnCurveByExtrapolation(PointsOnFault, 1, FaultApproxParams);            
+            extrapolateOnFaultLine(PointsOnFault, 1, FaultApproxParams);            
 
 
         finishedSurfPoint = false;
@@ -166,7 +168,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
             AuxVecLoc(1:ndim) = NewPointOnFault - PointsOnFault(numPointsToInterpolate,:);
             NormalVecLoc = cross(AuxVecLoc, NormalVecPlane);
             NormalVecLoc = NormalVecLoc(1:ndim)/norm(NormalVecLoc, 2);          
-            % this is purely heuristical
+            
+            % this is purely heuristic
             stepSize = max(0.95*FaultApproxParams.abstolBisection, ...
                            0.5* min(alpha*avg_dist, ...
                                     3*FaultApproxParams.abstolBisection*(relDist.^2+1)));
@@ -211,13 +214,13 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 finished = true;
                 bdomainLeft = true;
     
-                % approximate the intersection of the extrapolated line and
+                % Approximate the intersection of the extrapolated line and
                 % the domain boundary.
                 % We know that DataPars(numPointsToInterpolate) belongs to
                 % a point inside the domain. Therefore, it is a lower bound
                 % for the parameter of the intersection. On the other hand,
-                % point corresponding to extraParam does not belong to the
-                % domain. Therefore, this is an upper bound for the
+                % the point corresponding to extraParam does not belong to 
+                % the domain. Therefore, this is an upper bound for the
                 % parameter.
                 [xnew, iedge] = extraNewPointOnDomainBdry(DataPars(numPointsToInterpolate), ...
                     extraParam, PointsOnFault(end,:), NewPointOnFault, coeffs, Q, xmean, ...
@@ -230,7 +233,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 % from xnew, we need to create a pair of points as
                 % starting point for bisection. We need to ensure that the
                 % line segment between these two points is parallel to the
-                % appropriate domain boundary.
+                % appropriate domain boundary.  We do this by modifying
+                % updateVec.
                 switch iedge
                     
                     % x2 is minimal (bottom boundary/front surface of cube)
@@ -261,7 +265,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 relDist = norm(xnew - PointsOnFault(numPointsToInterpolate,:))/avg_dist;
                 updateVec = updateVec(1:ndim);
                 
-                %heuristic control of step length
+                % heuristic control of step length
                 updateVec = updateVec/norm(updateVec)* ...
                     max(0.95*FaultApproxParams.abstolBisection, ...
                         3*FaultApproxParams.abstolBisection*(relDist^2+1));
@@ -269,22 +273,23 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 xnewLeft = xnew + updateVec;
                 xnewRight = xnew - updateVec;
                 
-                % ensure that the new points near the boundary are really
-                % inside the domain
+                % Ensure that the new points near the boundary are really
+                % inside the domain.
                 xnewLeft = max(min(xnewLeft, ProblemDescr.Xmax - epstol), ...
                                ProblemDescr.Xmin + epstol);
                 xnewRight = max(min(xnewRight, ProblemDescr.Xmax - epstol), ...
                                 ProblemDescr.Xmin + epstol);
     
-                % no easier way to do this, as computeClassification
-                % outputs just one array, which can not be assigned to
-                % classPointLeft and classPointRight directly.
+                % There is no easier way to do this, as
+                % computeClassification outputs just one array, which can
+                % not be assigned to classPointLeft and classPointRight
+                % directly.
                 classNew = computeClassification([xnewLeft; xnewRight], ProblemDescr);
                 classPointLeft = classNew(1);
                 classPointRight = classNew(2);
                 LeftDomain(iclass, jclass, icomp) = iedge;
     
-                % find starting values for bisection
+                % Find starting values for bisection.
                 [PointPairs, IdxOk, ClassPointsOk] = ...
                     startPairs(xnewLeft, xnewRight, ...
                                classPointLeft, classPointRight, ...
@@ -293,7 +298,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 
                 if IdxOk
                     [PointLeft, PointRight, finishedSurfPoint] = ...
-                        computeSingleSurfacePoint(PointPairs(1:ndim), ...
+                        singleTripletByBisection(PointPairs(1:ndim), ...
                         PointPairs(ndim+1:2*ndim), ClassPointsOk(1), ...
                         ClassPointsOk(2), ProblemDescr, FaultApproxParams);
                 end
@@ -308,9 +313,10 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 % Did we expand the fault line beyond its end? If so,
                 % either PointLeft or PointRight belongs neither to iclass
                 % nor to jclass.
-                % In this case, take last known point pair in the subdomain
-                % and the first known outside, discard all others and find
-                % the end of the extrapolated fault line by bisection.
+                % In this case, take the last known point pair in the
+                % subdomain and the first known outside, discard all others
+                % and find the end of the extrapolated fault line by
+                % bisection.
                 % However, this is a heuristic approach, as it may happen
                 % that e.g. due to insufficient distance to the
                 % extrapolation curve, both points belong to the same
@@ -344,6 +350,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 % outside the subdomain is an upper bound for the
                 % parameter of the intersection.
                 tmax = extraParam(1);
+
+                % This point is known to be inside the subdomain.
                 xmin = evalPol(tmin, coeffs, Q, xmean);
                 xmax = evalPol(tmax, coeffs, Q, xmean);
                 dist = norm(xmin - xmax);
@@ -363,7 +371,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                     NormalVecLoc = NormalVecLoc(1:ndim)/norm(NormalVecLoc, 2);
                     relDist = norm(PointsOnFault(numPointsToInterpolate,:) - xnew,2)/avg_dist;
     
-                    % this is purely heuristical
+                    % this is purely heuristic
                     stepSizes = max(0.95*FaultApproxParams.abstolBisection, ...
                                     0.5* min(alpha*avg_dist, ...
                                              3*FaultApproxParams.abstolBisection*(relDist.^2+1)));
@@ -440,7 +448,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                             end
             
                             bdomainLeft = true;
-                            [PointLeft, PointRight, finishedSurfPoint] = computeSingleSurfacePoint(xnewLeft, ...
+                            [PointLeft, PointRight, finishedSurfPoint] = singleTripletByBisection(xnewLeft, ...
                             xnewRight, classPointLeft, ...
                             classPointRight, ProblemDescr, FaultApproxParams);
                             ClassPointsOk = [classPointLeft, classPointRight];
@@ -454,7 +462,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
             % expansion continues
             else
     
-                % find starting values for bisection
+                % Find starting values for bisection.
                 [PointPairs, IdxOk, ClassPointsOk] = startPairs(PointLeft, ...
                     PointRight, classPointLeft, classPointRight, ClassVals(iclass), ClassVals(jclass), ProblemDescr);
     
@@ -462,7 +470,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 % that the fault line left the domain, we must assume that it ended
                 % inside.
                 if IdxOk
-                    [PointLeft, PointRight, finishedSurfPoint] = computeSingleSurfacePoint(PointPairs(1:ndim), ...
+                    [PointLeft, PointRight, finishedSurfPoint] = singleTripletByBisection(PointPairs(1:ndim), ...
                     PointPairs(ndim+1:2*ndim), ClassPointsOk(1), ...
                     ClassPointsOk(2), ProblemDescr, FaultApproxParams);
                 else
@@ -471,7 +479,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 end
             end
     
-            % add new point if appropriate
+            % Add the new point if appropriate.
             if finishedSurfPoint
     
                 % Compute the distance to currently the last point on the
@@ -484,8 +492,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                     distToNewPoint = norm(LastCurrentPoint - PointRight,2);
                 end
     
-                % the new point is sufficiently far away from the last
-                % known one: add it
+                % The new point is sufficiently far away from the last
+                % known one: add it.
                 if (distToNewPoint > avg_dist*FaultApproxParams.minDistFactor)
                     npoints = npoints + 1;
                     iidxAdd = npoints;
@@ -496,8 +504,8 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                         IdxPointsEnlarged = [IdxPointsEnlarged, npoints];
                     end            
                 
-                % the new point is almost the last known one: replace the
-                % last known one by the new one and stop expanding
+                % The new point is almost the last known one: replace the
+                % last known one by the new one and stop expanding.
                 else
                     iidxAdd = IdxPointsEnlarged(IdxSet(end));
                     finished = true;
@@ -514,9 +522,9 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 % If the fault line appears to start or end inside the
                 % domain, it may be closed. We test this here.
                 if LeftDomain(iclass, jclass, icomp) <= 0
-                    closedComp = testForClosedComp(PointsIclass, ...
-                                                   IdxPointsEnlarged, ...
-                                                   distVec, npoints, mode);      
+                    closedComp = ComponentClosed(PointsIclass, ...
+                                                 IdxPointsEnlarged, ...
+                                                 distVec, npoints, mode);      
         
                     if (closedComp)
                         % If the fault component is closed, it does not 
@@ -535,7 +543,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                 pointsAdded = true;
                 distVec(iidxAdd) = distToNewPoint;
     
-            % no suitable point for adding found: try again. We assume
+            % No suitable point for adding found: try again. We assume
             % in this case that the fault line starts or ends inside the
             % domain unless found otherwise.
             else

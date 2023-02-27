@@ -77,7 +77,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         LeftDomainStartAux = -ones(size(LeftDomainStart));
         LeftDomainEndAux = -ones(size(LeftDomainEnd));
 
-        % PointSetsSurface{iclass, jclass} and
+        % The arrays PointSetsSurface{iclass, jclass} and
         % PointSetsSurface{jclass, iclass} both contain points near the
         % fault line between the classes iclass and jclass. The points of 
         % the former one belong to iclass, the points of the latter one to
@@ -133,7 +133,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         end
 
 
-        % compute the maximal number of components per fault line
+        % Compute the maximal number of components per fault line.
         maxNumComps = 0;
         for iclass = 1: nclasses
             for jclass = iclass + 1: nclasses
@@ -223,16 +223,20 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                     switch LeftDomainEndAux(iclass, jclass, icomp)
                         case(1)
                             aux = 1/(ProblemDescr.Xmax(1) - ProblemDescr.Xmin(1));
-                            ParValsEnd(iclass, jclass, icomp) = (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp))- ProblemDescr.Xmin(1))*aux;             
+                            ParValsEnd(iclass, jclass, icomp) = ...
+                                (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp))- ProblemDescr.Xmin(1))*aux;             
                         case(2)
                             aux = 1/(ProblemDescr.Xmax(2) - ProblemDescr.Xmin(2));
-                            ParValsEnd(iclass, jclass, icomp) = 1 + (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),2) - ProblemDescr.Xmin(2))*aux;                        
+                            ParValsEnd(iclass, jclass, icomp) = ...
+                                1 + (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),2) - ProblemDescr.Xmin(2))*aux;                        
                         case(3)
                             aux = 1/(ProblemDescr.Xmax(1) - ProblemDescr.Xmin(1));
-                            ParValsEnd(iclass, jclass, icomp) = 3 - (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),1)) - ProblemDescr.Xmin(1)*aux;                        
+                            ParValsEnd(iclass, jclass, icomp) = ...
+                                3 - (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),1)) - ProblemDescr.Xmin(1)*aux;                        
                         case(4)
                             aux = 1/(ProblemDescr.Xmax(2) - ProblemDescr.Xmin(2));
-                            ParValsEnd(iclass, jclass, icomp) = 4 - (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),2) - ProblemDescr.Xmin(2))*aux;
+                            ParValsEnd(iclass, jclass, icomp) = ...
+                                4 - (PointSetsSurfaceAux{iclass, jclass}{icomp}(NumPointsSurf(iclass, jclass, icomp),2) - ProblemDescr.Xmin(2))*aux;
                     end             
                 end
             end
@@ -245,8 +249,9 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         CornersNext(4,:) = [ProblemDescr.Xmin(1) ProblemDescr.Xmin(2)];
 
 
-        % Combine components of fault line to polygons which approximate
-        % the components of the subdomain associated to the classes.
+        % Combine the components of the fault lines to polygons which
+        % approximate the components of the subdomain associated to the
+        % classes.
         for iclass = 1: nclasses
 
             % We do not know how many components the subdomain associated
@@ -296,7 +301,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                     end
 
                     if jclass > 0
-                        % it is not entirely clear why this error case
+                        % It is not entirely clear why this error case
                         % should occur, but it does.
                         if (size(Subdomains{ClassVals(iclass)},1) >= icomp)
                             Subdomains{ClassVals(iclass)}{icomp} = [Subdomains{ClassVals(iclass)}{icomp}; PointSetsSurfaceAux{iclass, jclass}{jcomp}];
@@ -356,15 +361,15 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                             % before if the component of the subdomain is
                             % closed yet.
                             if (any(iidx(:)))
-                                 % get the indices of the corresponding boundary
-                                % parts
+                                 % Get the indices of the corresponding boundary
+                                % parts.
                                 [i,j] = ind2sub(size(iidx), find(iidx ==1));
                                 iidx2 = zeros(size(i,1), 2);
                                 iidx2(:,1) = i;
                                 iidx2(:,2) = j;
 
                                 auxVals = zeros(size(iidx2, 1),1);
-                                 % find the nearest part
+                                 % Find the nearest part.
                                 for i = 1: size(iidx2, 1)
                                     auxVals(i) = PointSetsSurfaceAux{iclass, iidx2(i,1)}{iidx2(i,2)}(1,mod(edgeEnd+1,2)+1);
                                 end
@@ -425,16 +430,17 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                             end
 
                             if any(iidx(:))
-                                % get the indices of the corresponding boundary
-                                % parts
+                                % Get the indices of the corresponding boundary
+                                % parts.
                                 [i,j] = ind2sub(size(iidx), find(iidx ==1));
                                 iidx2 = zeros(size(i,1), 2);
                                 iidx2(:,1) = i;
                                 iidx2(:,2) = j;
                                 auxVals = zeros(size(iidx2, 1),2);                            
 
-                                % collect all starting points and compute their
-                                % distance to the end point of the current part
+                                % Collect all starting points and compute their
+                                % distance to the end point of the current
+                                % part.
                                 for i = 1: size(iidx2, 1)
                                     auxVals(i,:) = PointSetsSurfaceAux{iclass, iidx2(i,1)}{iidx2(i,2)}(1,:);
                                 end
@@ -445,7 +451,8 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                                 [minDist, jclass] = min(auxVals(:,1));
 
                                 minDist = sqrt(minDist);
-                                % if there are candidates which are reasonably
+                                
+                                % If there are candidates which are reasonably
                                 % close, continue with them.
                                 if (minDist < FaultApproxParams.maxDistForSurfacePoints)
                                 % up to here, jclass is the index in iidx2, not
@@ -636,7 +643,8 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
 
                     % we start somewhere in the middle 
                     case(0)
-                        Subdomains{ClassVals(iclass)}{icomp} = [Subdomains{ClassVals(iclass)}{icomp}; Subdomains{ClassVals(iclass)}{icomp}(1,:)];
+                        Subdomains{ClassVals(iclass)}{icomp} = [Subdomains{ClassVals(iclass)}{icomp}; ...
+                                                                Subdomains{ClassVals(iclass)}{icomp}(1,:)];
                 end
                 if (bfinishedSub)
                     nparts = icomp;
@@ -648,7 +656,8 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
             end
 
             if (any(NumPointsSurf(iclass,:) > 0))
-                warning(['There are leftover boundary parts from subdomain ', int2str(ClassVals(iclass)), ', reconstruction of subdomains failed.'])
+                warning(['There are leftover boundary parts from subdomain ', ...
+                         int2str(ClassVals(iclass)), ', reconstruction of subdomains failed.'])
                 succeeded = false;
                 return
             end
@@ -691,13 +700,17 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                 % Number of points per subdomain
                 idx2 = size(Subdomains{ClassVals(iclass)}{ipart},1);
                 idx2 = min(idx2-1, ceil(0.5*idx2));
-                auxVec = Subdomains{ClassVals(iclass)}{ipart}([idx1 idx2],:) - Subdomains{ClassVals(iclass)}{ipart}([idx1+1 idx2+1],:);
+                auxVec = Subdomains{ClassVals(iclass)}{ipart}([idx1 idx2],:) - ...
+                         Subdomains{ClassVals(iclass)}{ipart}([idx1+1 idx2+1],:);
 
-                testPoint = Subdomains{ClassVals(iclass)}{ipart}([idx1 idx2] ,:) -0.5*auxVec - 0.01*[-auxVec(:, 2),  auxVec(:, 1)];
-                inside = inpolygon(testPoint(:,1), testPoint(:,2), Subdomains{ClassVals(iclass)}{ipart}(:,1),Subdomains{ClassVals(iclass)}{ipart}(:,2));
+                testPoint =  Subdomains{ClassVals(iclass)}{ipart}([idx1 idx2] ,:) ...
+                           - 0.5*auxVec - 0.01*[-auxVec(:, 2),  auxVec(:, 1)];
+                inside = inpolygon(testPoint(:,1), testPoint(:,2), ...
+                                   Subdomains{ClassVals(iclass)}{ipart}(:,1), ...
+                                   Subdomains{ClassVals(iclass)}{ipart}(:,2));
 
                 bflip = false;
-                % both two points are outside
+                % Both two points are outside.
                 if (all(~inside))
                     bflip = true;
 
@@ -705,8 +718,8 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
                 elseif (any(inside) && any(~inside))
                     idx3 = size(Subdomains{ClassVals(iclass)}{ipart},1);
 
-                    % the following heuristic works if the subdomain consists
-                    % of more than three points
+                    % The following heuristic works if the subdomain
+                    % consists of more than three points.
                     if (idx3 > 3)
                         idx3 = min(idx3-1, ceil(0.75*idx3));
                         idx3Next = idx3 + 1;
@@ -731,7 +744,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
             end
         end
 
-        % here, any subdomain must consist of at least three points. Check
+        % Here, any subdomain must consist of at least three points. Check
         % this.
         for iclass = 1: nclasses
             ncomps = size(Subdomains{iclass});
@@ -750,9 +763,9 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         
         succeeded = true;
 
-        % another consistency check: test, that subdomains do not overlap
-        % As heuristic, we take test points and test if these are included in
-        % more than one part of a subdomains
+        % Another consistency check: test, that subdomains do not overlap.
+        % As heuristic, we take test points and test if these are included
+        % in more than one part of a subdomain.
         testPoints = CreateHaltonSet(200, 2);
 
         % affine transformation from [0,1]^2 to [Xmin, Xmax]^2

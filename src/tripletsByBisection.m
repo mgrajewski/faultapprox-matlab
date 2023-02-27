@@ -34,9 +34,9 @@
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
 function [PointsLeft, PointsRight, Finished] = ...
-    computeSurfacePoints(PointsLeftStart, PointsRightStart, ...
-                         ClassesOfLeft, ClassesOfRight, ...
-                         ProblemDescr, FaultApproxParams)
+    tripletsByBisection(PointsLeftStart, PointsRightStart, ...
+                        ClassesOfLeft, ClassesOfRight, ...
+                        ProblemDescr, FaultApproxParams)
 
     global ncalls
     
@@ -67,14 +67,14 @@ function [PointsLeft, PointsRight, Finished] = ...
         
         if (all(FinishedAux))
 
-            % add points to the list of surface points and break
-            % note that both points are in different classes
+            % Add points to the list of surface points and break. Note that
+            % both points are in different classes.
             PointsLeft = PointsLeftStart;
             PointsRight = PointsRightStart;
             
             if anotherclass
                 warnMessage = ['Bisection for at least one point' ...
-                               ' in computeSurfacePoints failed' ...
+                               ' in tripletsByBisection failed' ...
                                ' due to a third class.'];
                 warning(warnMessage)
             end
@@ -96,7 +96,7 @@ function [PointsLeft, PointsRight, Finished] = ...
             PointsRightStart((~FinishedAux & (ClassesOfMid == ClassesOfRight)),:) = ...
                 PointsMid((~FinishedAux & (ClassesOfMid == ClassesOfRight)),:);
  
-            % sort out all points where a third class is involved
+            % Sort out all points where a third class is involved.
             IidxAnotherClass = ~FinishedAux & ...
                                (ClassesOfMid ~= ClassesOfLeft) & ...
                                (ClassesOfMid ~= ClassesOfRight);
@@ -110,7 +110,7 @@ function [PointsLeft, PointsRight, Finished] = ...
     end
     
     if ~all(Finished)
-        warnMessage = 'Bisection for at least one point in computeSurfacePoints failed ';
+        warnMessage = 'Bisection for at least one point in tripletsByBisection failed ';
         warnMessage = [warnMessage ', consider enlarging maxIterBisection.'];
         warning(warnMessage)
     end

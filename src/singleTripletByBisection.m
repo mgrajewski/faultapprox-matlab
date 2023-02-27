@@ -30,9 +30,9 @@
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
 function [PointLeftFinal, PointRightFinal, finished] = ...
-    computeSingleSurfacePoint(PointLeftStart, PointRightStart, ...
-                              classOfLeft, classOfRight, ProblemDescr, ...
-                              FaultApproxParams)
+    singleTripletByBisection(PointLeftStart, PointRightStart, ...
+                             classOfLeft, classOfRight, ProblemDescr, ...
+                             FaultApproxParams)
 
     % stopping criterion for bisection algorithm
     abstolBisection = FaultApproxParams.abstolBisection;
@@ -52,8 +52,8 @@ function [PointLeftFinal, PointRightFinal, finished] = ...
         % met for the mean: we are done.
         if (normError < 2.0*abstolBisection)
 
-            % add points to the list of surface points and return
-            % note that both points are in different classes
+            % Add points to the list of surface points and return. Note
+            % that both points are in different classes.
             PointLeftFinal = PointLeftStart;
             PointRightFinal = PointRightStart;
             finished = true;
@@ -66,7 +66,7 @@ function [PointLeftFinal, PointRightFinal, finished] = ...
             % new midpoint
             PointMid = 0.5*(PointLeftStart + PointRightStart);
 
-            % the interval length is halved
+            % The interval length is halved.
             normError = 0.5*normError;
 
             classOfMid = computeClassification(PointMid, ProblemDescr);
@@ -84,10 +84,10 @@ function [PointLeftFinal, PointRightFinal, finished] = ...
                 classOfRight = classOfMid;
 
             % This case indicates that there are at least two sections with
-            % faults on the line from Left to Right. We skip search
-            % then and return back to the calling function.
+            % faults on the line from Left to Right. We skip search in this
+            % case and return to the calling function.
             else
-                warnMessage = ['Bisection in computeSingleSurfacePoint failed, res = ' ...
+                warnMessage = ['Bisection in singleTripletByBisection failed, res = ' ...
                                num2str(normError)...
                                ', due to a third class ' ...
                                int2str(classOfMid)];
@@ -99,7 +99,7 @@ function [PointLeftFinal, PointRightFinal, finished] = ...
         iiter = iiter+1;
     end
     
-    warnMessage = ['Bisection in computeSingleSurfacePoint failed, res = ' ...
+    warnMessage = ['Bisection in singleTripletByBisection failed, res = ' ...
                    num2str(normError) ...
                    ', consider enlarging maxiterBisection.'];
     warning(warnMessage)

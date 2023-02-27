@@ -1,6 +1,6 @@
 % This function provides the 2d-specific part of the algorithm. For
 % details, we refer to "Detecting and approximating decision boundaries in
-% low dimensional spaces".
+% low dimensional spaces" (http://arxiv.org/abs/2302.08179).
 %
 % Input:
 % - PointSetsSurface: (nclasses x nclasses)-structure of structures
@@ -55,12 +55,12 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                       int2str(ClassVals(iclass)) ' and ' int2str(ClassVals(jclass))])
             end
 
-            % up to this point, there is only one component per fault
-            % line
+            % Up to this point, there is only one component per fault
+            % line.
             if (NumPointsSurf{iclass, jclass}(1) > 0)
 
-                % fill possible gaps in the fault line by adding more
-                % points in between consecutive points if necessary
+                % Fill possible gaps in the fault line by adding more
+                % points in between consecutive points if necessary.
                 
                 itry = 1;
                 
@@ -94,8 +94,8 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                         return
                     end
                                         
-                    % in fact, points have been added on both sides of the
-                    % fault line simultaneously
+                    % In fact, points have been added on both sides of the
+                    % fault line simultaneously, forming triplets.
                     NumPointsSurf{jclass, iclass}(1) = NumPointsSurf{iclass, jclass}(1);
 
                     % sort again
@@ -120,8 +120,9 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                 end
                 
                 
-                % test, if the fault line between class iclass and
-                % jclass consists in fact of several unconnected parts
+                % Test, if the fault line between class iclass and
+                % jclass consists in fact of several unconnected
+                % components.
                 [PointSetsSurface{iclass, jclass}, ...
                  NumCompsPerFaultLine(iclass, jclass), ...
                  NumPointsSurf{iclass, jclass}] = ...
@@ -143,11 +144,11 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     end
                 end
                 
-                % repeat sorting for the counterparts on the other side
-                % of the fault line
+                % Repeat sorting for the counterparts on the other side
+                % of the fault line.
                 NumCompsPerFaultLine(jclass, iclass) = NumCompsPerFaultLine(iclass, jclass);
 
-                % hack: as iclass < jclass, NumPointsSurf{jclass, iclass}
+                % Hack: as iclass < jclass, NumPointsSurf{jclass, iclass}
                 % has not been updated yet and therefore contains the
                 % number of points in S_i,j prior to separation in
                 % components.
@@ -219,7 +220,8 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     % poynomial curve to the first and the last points in
                     % the point set.
 
-                    % if only one point: find more by scattering
+                    % If the component consists of one point only: find
+                    % more by scattering.
                     if numPointsComp == 1
                         SinglePoint = PointSetsSurface{iclass, jclass}{icomp};
                         AuxVec = [-1.5, -1; 0.5, -1; 0.5,1; -1.5, 1];
@@ -236,7 +238,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                             % points in class jclass
                             Xtest2 = Xtest(classAux == ClassVals(jclass),:);
 
-                            % build all combinations between these points
+                            % Build all combinations between these points.
                             npointsi = size(Xtest1,1);
                             npointsj = size(Xtest2,1);
                             ncombis = npointsi * npointsj;
@@ -253,12 +255,12 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
 
                             for i = 1: ncombis
                                 [PointLeft, PointRight, finished] = ...
-                                    computeSingleSurfacePoint(Pointsiclass(i,:), ...
-                                                              Pointsjclass(i,:), ...
-                                                              ClassVals(iclass), ...
-                                                              ClassVals(jclass), ...
-                                                              ProblemDescr, ...
-                                                              FaultApproxParams);
+                                    singleTripletByBisection(Pointsiclass(i,:), ...
+                                                             Pointsjclass(i,:), ...
+                                                             ClassVals(iclass), ...
+                                                             ClassVals(jclass), ...
+                                                             ProblemDescr, ...
+                                                             FaultApproxParams);
 
                                 if (finished)
                                     NumPointsSurf{iclass, jclass}(icomp) = NumPointsSurf{iclass, jclass}(icomp) + 1;
@@ -308,6 +310,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                         PointSetsSurface{jclass, iclass}{icomp}(IdxPointsSurfOrdered, :);
 
                     IdxPointsSurfOrdered = 1: NumPointsSurf{iclass, jclass}(icomp);
+                    
                     % end of fault line
                     [IdxPointsSurfOrderedNew, LeftDomainEnd, NumPointsSurf{iclass,jclass}(icomp), ...
                         PointSetsSurface{iclass,jclass}{icomp}, PointSetsSurface{jclass,iclass}{icomp}, reSort, ~] = ...
@@ -322,7 +325,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     PointSetsSurface{jclass, iclass}{icomp} = ...
                         PointSetsSurface{jclass, iclass}{icomp}(IdxPointsSurfOrdered, :);
                     
-                    % resort the points on the fault line if indicated
+                    % Resort the points on the fault line if indicated.
                     if reSort
                         [IdxPointsSurfOrdered, sortingSuccessful] = ...
                             sortPointsOnFaultLine(PointSetsSurface{iclass, jclass}{icomp}, ...
@@ -342,7 +345,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                         end
                     end
                 
-                    % remove duplicates: Duplicates should actually not
+                    % Remove duplicates: Duplicates should actually not
                     % occur, but they can due to wrong sorting which
                     % remained unnoticed.
                     [PointSetsSurface{iclass, jclass}{icomp}, PointSetsSurface{jclass, iclass}{icomp}] = ...
@@ -354,7 +357,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     NumPointsSurf{jclass, iclass}(icomp) = size(PointSetsSurface{jclass, iclass}{icomp}, 1);
                 end
 
-                % consistency check: test, if the different components
+                % Consistency check: test, if the different components
                 % intersect. It may happen that due to failed sorting,
                 % some single point or so was errornously considered a
                 % separate boundary component. Now, additional points
@@ -364,6 +367,9 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     for icomp = 1: NumCompsPerFaultLine(iclass,jclass)
                         
                         jcomp = icomp+1;
+                        % A while-loop is better here, as
+                        % NumCompsPerFaultLine may decrease by merging,
+                        % which is not reflected in an ordinary for-loop.
                         while jcomp <= NumCompsPerFaultLine(iclass,jclass)
                             doNotIntersect = ...
                                 ~polyLinesIntersect(PointSetsSurface{iclass, jclass}{icomp}, ...
@@ -372,7 +378,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                                 isOnPolyLine(PointSetsSurface{iclass, jclass}{icomp}, ...
                                              PointSetsSurface{iclass, jclass}{jcomp});
 
-                            % if two components intersect, they must in
+                            % If two components intersect, they must in
                             % fact be one component. Therefore, we merge
                             % them.
                             if (~doNotIntersect || pointOnLine)
@@ -394,8 +400,8 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                                     return;
                                 end
                                 
-                                % test, if the new boundary component
-                                % does not intersect itself
+                                % Test, if the new boundary component does
+                                % not intersect itself.
                                 doNotIntersect = ~selfIntersection(test);
                                 if (doNotIntersect)
                                     PointSetsSurface{iclass, jclass}{icomp} = test;
@@ -491,16 +497,17 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
         ExtendedStats.nPointsSurf{end+1} = NumPointsSurf;
     end
     
-    % if necessary, reverse the order of fault line components
+    % If necessary, reverse the order of fault line components.
     for iclass = 1:nclasses
         for jclass = iclass+1:nclasses
             for icomp = 1: NumCompsPerFaultLine(iclass, jclass)
                 if (NumPointsSurf{iclass, jclass}(icomp) > 1)
     
-                    % order the points near the fault line such that the
-                    % subdomain iclass is right to the line
+                    % Sort the points near the fault line such that the
+                    % subdomain iclass is right to the line.
 
-                    % take a point from somewhere in the middle of the line
+                    % Take a point from somewhere in the middle of the
+                    % line.
                     iidx = max(2, round(NumPointsSurf{iclass, jclass}(icomp)/2));
 
                     % vector pointing from point with index iidx to
@@ -543,21 +550,21 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     % The first or the last point on a boundary component
                     % is unsuitable for our purpose.
 
-                    % point is somewhere in the middle: just take that
+                    % Point is somewhere in the middle: just take that
                     % point. Note that iidx >=2, such that
                     % NumPointsSurf{iclass, jclass}(icomp) >= 3
                     if (iidx < NumPointsSurf{iclass, jclass}(icomp))
                         auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx,:) - NormalVec;
 
-                    % very last point, more than two points on the
-                    % component: take the predecessor
+                    % Very last point, more than two points on the
+                    % component: take the predecessor.
                     elseif (iidx == NumPointsSurf{iclass, jclass}(icomp) && ...
                             NumPointsSurf{iclass, jclass}(icomp) > 2)
                         auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx-1,:) - NormalVec;
 
-                    % very last point, and just two points on the
+                    % Very last point, and just two points on the
                     % component: compute an auxiliary point based on
-                    % the mean of the two points
+                    % the mean of the two points.
                     else
                         auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx-1,:) + 0.5*AuxVec - NormalVec;
                     end
@@ -565,7 +572,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     if (classAux == ClassVals(jclass))
                         PointSetsSurface{iclass, jclass}{icomp} = flip(PointSetsSurface{iclass, jclass}{icomp});
                         
-                        % start point becomes end point
+                        % Start point becomes end point.
                         aux = LeftDomainEnd(iclass, jclass, icomp);
                         LeftDomainEnd(iclass, jclass, icomp) = LeftDomainStart(iclass, jclass, icomp);
                         LeftDomainStart(iclass, jclass, icomp) = aux;
@@ -577,19 +584,19 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                     % subdomain. In this case, we reverse it
                     % and try again. If it still fails, we give up.
                     else
-                        % point is somewhere in the middle: just take that
+                        % Point is somewhere in the middle: just take that
                         % point. Note that iidx >=2, such that
-                        % NumPointsSurf{iclass, jclass}(icomp) >= 3
+                        % NumPointsSurf{iclass, jclass}(icomp) >= 3.
                         if (iidx < NumPointsSurf{iclass, jclass}(icomp))
                             auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx,:) + NormalVec;
-                        % very last point, more than two points on the
-                        % component: take the predecessor
+                        % Very last point, more than two points on the
+                        % component: take the predecessor.
                         elseif (iidx == NumPointsSurf{iclass, jclass}(icomp) && ...
                                 NumPointsSurf{iclass, jclass}(icomp) > 2)
                             auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx-1,:) + NormalVec;
-                        % very last point, and just two points on the
+                        % Very last point, and just two points on the
                         % component: compute an auxiliary point based on
-                        % the mean of the two points
+                        % the mean of the two points.
                         else
                             auxPoint = PointSetsSurface{iclass, jclass}{icomp}(iidx-1,:) + 0.5*AuxVec + NormalVec;
                         end
@@ -599,7 +606,7 @@ function [PointSetsSurface, NumPointsSurf, LeftDomainStart, ...
                         if (classAux2 == ClassVals(iclass))
                             PointSetsSurface{iclass, jclass}{icomp} = flip(PointSetsSurface{iclass, jclass}{icomp});
 
-                            % start point becomes end point
+                            % Start point becomes end point.
                             aux = LeftDomainEnd(iclass, jclass, icomp);
                             LeftDomainEnd(iclass, jclass, icomp) = LeftDomainStart(iclass, jclass, icomp);
                             LeftDomainStart(iclass, jclass, icomp) = aux;

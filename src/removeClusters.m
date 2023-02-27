@@ -62,7 +62,7 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
     ClusterPointsAll = {};
     for ipoint = 1: numPointsIni
 
-        % point belongs to no cluster yet
+        % if point belongs to no cluster yet
         if (~alreadyInCluster(ipoint))
             ClusterPoints = DistMat(ipoint, :) < minDistFactor*maxDistForSurfacePoints;
 
@@ -109,12 +109,12 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
             numPoints = numPoints - 1;
         else
 
-            % test, how large the cluster is
+            % Test, how large the cluster is.
             DistMatLoc = DistMat(iidx, iidx);
 
             clusterSize = max(max(DistMatLoc));
 
-            % the cluster is very small: take the mean
+            % If the cluster is very small, take the mean.
             if (clusterSize < minDistFactor*maxDistForSurfacePoints)
                 MeanIclass = 1/numPointsInCluster*ones(1,numPointsInCluster)*PointsIclass(iidx,:);
                 MeanJclass = 1/numPointsInCluster*ones(1,numPointsInCluster)*PointsJclass(iidx,:);
@@ -125,9 +125,8 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
 
                 numPoints = numPoints - numPointsInCluster + 1;
 
-            % take selected points from the cluster: left most
-            % and rightmost point and somewhere in the middle,
-            % if necessary
+            % Take selected points from the cluster: leftmost and
+            % rightmost point and some points in the middle, if necessary.
             else
                 numPointsMiddle = 0;
 
@@ -137,14 +136,15 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
                 % local midpoint
                 xmid = 1/numPointsInCluster*ones(1, numPointsInCluster)*ClusterPoints;
 
-                % compute local coordinate system based on the normal vector
+                % Compute local coordinate system based on the normal
+                % vector.
                 ClusterPoints = ClusterPoints - xmid;
                 [~, ~, Q] = svd(ClusterPoints);
                 
-                % cluser points in the local coordinate system
+                % cluster points in the local coordinate system
                 ClusterPoints = ClusterPoints*Q;
                 
-                % sort points locally according to the longest axis. As
+                % Sort points locally according to the longest axis. As
                 % singular values are provided in descending order, this is
                 % alway the first coordinate.
                 [~, IidxSorted] = sort(ClusterPoints(:,1));
@@ -179,8 +179,8 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
                     % to the x-coordinate after orthogonal transformation!)
                     idxPoint = find(ClusterPointsSorted(:,1) - ClusterPointsSorted(istart,1) > minDistFactor*maxDistForSurfacePoints, 1, 'first');
 
-                    % there is no such point (may happen when some inner
-                    % points have been found already)
+                    % There is no such point (may happen when some inner
+                    % points have been found already).
                     if size(idxPoint, 1) == 0
                         stop = true;
                     else
@@ -199,8 +199,8 @@ function [PointsIclass, PointsJclass, numPoints] = removeClusters(PointsIclass, 
                     end
                 end
                 
-                % mark all points except of the extremal points and
-                % valid inner points for deletion
+                % Mark all points except of the extremal points and
+                % valid inner points for deletion.
                 PointsIclass(iidx(3+numPointsMiddle:numPointsInCluster),:) = -42;
                 PointsIclass(iidx(3:3+numPointsMiddle-1),:) = ClusterPointsIclass(idxMid,:);
 

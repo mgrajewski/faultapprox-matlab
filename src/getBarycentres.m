@@ -28,16 +28,15 @@
 function MeansOfBarycentres = getBarycentres(PointSet, ClassOfPoints, ...
                                              FaultApproxParameters)
     
-    % we assume that the classes are indicated by subsequent integers
-    % starting from one
+    % number of points and dimension
     npoints = size(PointSet,1);
     ndim = size(PointSet,2);
     
     % number of nearest points to consider
     nNearestPoints = FaultApproxParameters.nNearestPoints; 
     
-    % when removing duplicates, points closer than eps are considered
-    % identical
+    % When removing duplicates, points closer than epsLoc are considered
+    % identical.
     epsLoc = FaultApproxParameters.eps;
     
     % We do not know how many barycentres exist, but at most npoints ones.
@@ -50,7 +49,7 @@ function MeansOfBarycentres = getBarycentres(PointSet, ClassOfPoints, ...
     % lower nNearestPoints if necessary
     nNearestPoints = min(nNearestPoints, size(PointSet, 1));
 
-    % compte distance matrix for finding nearest points
+    % Compute distance matrix for finding the nearest points.
     DistMatAux = zeros(npoints, npoints, ndim);
     for i = 1: npoints
         DistMatAux(:,i,:) = PointSet - PointSet(i,:);
@@ -69,27 +68,27 @@ function MeansOfBarycentres = getBarycentres(PointSet, ClassOfPoints, ...
     % loop over points
     for ipoint = 1: npoints
             
-        % these are the nNearestPoints nearest points to the given one
+        % These are the nNearestPoints nearest points to the given point.
         IdxCurrentNearestNeighbours = IdxNearestNeighbours(1:nNearestPoints, ipoint);
         NearestNeighbours = PointSet(IdxCurrentNearestNeighbours,:);
             
-        % a point is a fault point if in its neighborhood are points of
-        % several classes
+        % A point is a fault point if in its neighborhood are points of
+        % several classes.
         ClassOfNearestNeighbours = ClassOfPoints(IdxCurrentNearestNeighbours);
             
         % Find the values and the number of classes represented in
-        % NearestNeighbours
+        % NearestNeighbours.
         ClassVals = unique(ClassOfNearestNeighbours);
         nclasses = size(ClassVals,1);
         
-        % NearestNeighbours contains points from more than one class
+        % NearestNeighbours contains points from more than one class.
         if (nclasses > 1)
 
             % For each class, compute the barycentre of the points in
             % NearestNeighbours which belong to that class.
             BarycentresInClass = zeros(nclasses, ndim);
                             
-            % add barycentres for improved approximation of the fault
+            % Add barycentres for improved approximation of the fault.
             for iclass = 1: nclasses
                 PointsInClass = NearestNeighbours(ClassOfNearestNeighbours == ClassVals(iclass), :);
 
@@ -112,11 +111,11 @@ function MeansOfBarycentres = getBarycentres(PointSet, ClassOfPoints, ...
         end
     end
     
-    % shorten vector to its appropriate length
+    % Shorten vector to its appropriate length.
     MeansOfBarycentres = MeansOfBarycentres(1:nMeansOfBarycentres, :);
 
-    % last part: remove duplicates. Two points are considered duplicate if
-    % closer than eps
+    % Last part: remove duplicates. Two points are considered duplicate if
+    % closer than epsLoc.
     for i = 1: nMeansOfBarycentres-1
         for j = i+1: nMeansOfBarycentres
             if(abs(norm(MeansOfBarycentres(i,:) - MeansOfBarycentres(j,:))) < epsLoc)
@@ -125,5 +124,4 @@ function MeansOfBarycentres = getBarycentres(PointSet, ClassOfPoints, ...
         end
     end
     MeansOfBarycentres = MeansOfBarycentres(MeansOfBarycentres(:,1) ~= -42,:);
-
 end

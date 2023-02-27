@@ -4,7 +4,7 @@
 % setting the parameter FaultApproxParams.maxDistForSurfacePoints.
 % Therefore, we need to fill such gaps. This is what this function does.
 % We sort the given triplets (aka point pairs) on the fault line and 
-% compute the distance between consecutive points. If we detect a gap,
+% compute the distance between consecutive triplets. If we detect a gap,
 % we create new equidistant point pairs. The starting points for
 % bisection are computed by the estimated local curvature of the fault
 % line. For creating them, we divide the straight line from the current
@@ -12,14 +12,14 @@
 % deviate from it in normal direction symmetrically in both directions.
 % The distance to the line is driven by the estimated curvature and
 % safeguarded such that for a straight line, no further function
-% evaluations apart of the ones for classification of the starting points
+% evaluations apart from the ones for classification of the starting points
 % should be necessary. This is for efficiency reasons.
 % In the case of strong curvature, it may happen that by coincidence, a
 % newly added point pair is very close to an existing one. Before adding a
 % new point, we consider the minimal distance to the existing ones and add
 % the point only if this distance is greater than
 % maxDistForSurfacePoints*minDistFactor.
-% We do not resort the points on the line after filling gaps but just
+% We do not resort the triplets on the line after filling gaps but just
 % append them to the arrays of existing points.
 %
 % Input:
@@ -84,7 +84,7 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
     PointsIclass = PointsIclass(IdxPointsSurfOrdered{1},:);
     PointsJclass = PointsJclass(IdxPointsSurfOrdered{1},:);
     
-    % here, the points on the fault line are ordered. Fill gaps, if
+    % Here, the triplets on the fault line are ordered. Fill gaps, if
     % necessary.
     iidxNextSegment = 1;
     IdxSegment = zeros(nTriplets, 1);
@@ -121,14 +121,14 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
             NormalVec = cross(AuxVec, NormalVecOfPlane);
             NormalVec = NormalVec/norm(NormalVec(1:ndim));
 
-            % for 2 dimensions: use refined method of computing starting
-            % values based upon estimated curvature
+            % For 2 dimensions: use refined method of computing starting
+            % values based upon estimated curvature.
             if ndim == 2
                 if ipoint > 2 && ipoint < nTriplets-2
                     curv = estimateCurvature(0.5*(PointsIclass(ipoint-2:ipoint+2,:) + ...
                                                  PointsJclass(ipoint-2:ipoint+2,:)), 3, abstolBisection);
             
-                % estimating the curvature is most reliable for the
+                % Estimating the curvature is most reliable for the
                 % midpoint of the subset, therefore, we enlarge its value
                 % by an additional safety factor here.
                 elseif ipoint <= 2
@@ -139,8 +139,8 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
                     else
                         curv = 0;
                     end
-                % in this case, ipoint >= 3, such that we can compute the
-                % curvature in any case    
+                % In this case, ipoint >= 3, such that we can compute the
+                % curvature in any case.
                 elseif ipoint >= nTriplets-2
                     curv = safetyFactor*estimateCurvature(0.5*(PointsIclass(max(1, nTriplets-4):nTriplets,:) + ...
                                                               PointsJclass(max(1, nTriplets-4):nTriplets,:)), ...
@@ -181,7 +181,7 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
             
             PointsAux = PointsOnLine + errorInd*NormalVec(1:ndim);
             
-            % guarantee that PointsAux is within the domain
+            % Ensure that PointsAux is within the domain.
             PointsAux = min(max(ProblemDescr.Xmin + eps, PointsAux), ProblemDescr.Xmax - eps);
 
             StartPointsRight(IdxSegment(ipoint):iidxNextSegment-1,:) = PointsAux;
@@ -192,11 +192,11 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
         end
     end
     
-    % shorten and create vectors accordingly
+    % Shorten and create vectors accordingly.
     StartPointsLeft = StartPointsLeft(1:iidxNextSegment-1, :);
     StartPointsRight = StartPointsRight(1:iidxNextSegment-1, :);
 
-    % if there are no points to add at all, skip the computation
+    % If there are no points to add at all, skip the computation.
     if (size(StartPointsLeft,1) == 0)
         success = true;
         return
@@ -207,30 +207,30 @@ function [PointsIclass, PointsJclass, nTriplets, tripletsAdded, success] = ...
     ClassLeft = AuxArr(1: iidxNextSegment-1, :);
     ClassRight = AuxArr(iidxNextSegment:size(AuxArr, 1));
 
-    % find points near the fault line, each with a counterpart
-    % in the opposite class
+    % Find points near the fault line, each with a counterpart in the
+    % opposite class.
     [PointPairs, IdxSucceeded, ClassPointsSucceeded] = startPairs(StartPointsLeft, ...
         StartPointsRight, ClassLeft, ClassRight, ClassVals(iclass), ClassVals(jclass), ProblemDescr);
 
-    % compute points near the fault line by bisection
+    % Compute points near the fault line by bisection.
     [PointsLeft, PointsRight, Finished] = ...
-        computeSurfacePoints(PointPairs(IdxSucceeded,1:ndim), ...
-                             PointPairs(IdxSucceeded, ndim+1:2*ndim), ...
-                             ClassPointsSucceeded(IdxSucceeded,1), ...
-                             ClassPointsSucceeded(IdxSucceeded,2), ...
-                             ProblemDescr, FaultApproxParams);
+        tripletsByBisection(PointPairs(IdxSucceeded,1:ndim), ...
+                            PointPairs(IdxSucceeded, ndim+1:2*ndim), ...
+                            ClassPointsSucceeded(IdxSucceeded,1), ...
+                            ClassPointsSucceeded(IdxSucceeded,2), ...
+                            ProblemDescr, FaultApproxParams);
 
-    % Compute array with the indices of the points where computeSurfacePoints
-    % suceeded in the complete array of points
+    % Compute array with the indices of the points where
+    % tripletsByBisection suceeded in the complete array of points.
     aux = 1:size(IdxSucceeded,1);
     IdxSucceeded = aux(IdxSucceeded);
     
-    %avoid to add almost duplicate points
+    % Avoid to add almost duplicate points.
     for i = 1: size(Finished,1)
 
         if Finished(i)
 
-            % compute distance to all points on the fault line
+            % Compute distance to all points on the fault line.
             DistVec = PointsIclass - PointsLeft(i,:);
 
             DistVec = DistVec.^2;

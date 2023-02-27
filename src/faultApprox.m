@@ -185,7 +185,7 @@ function [Subdomains, reconstructionSucceeded, ncallsResult, tel] = ...
 
             % prepare visualisation
             [GlobalPoints, GlobalMesh, PointData] = ...
-                visualizeSubdivision(Subdomains, ProblemDescr, ndim);
+                visualizeSubdomains(Subdomains, ProblemDescr, ndim);
            
             if ProblemDescr.verboseMode
                 disp('- write visualisation file')

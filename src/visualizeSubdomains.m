@@ -29,7 +29,7 @@
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
 function [GlobalPoints, GlobalMesh, PointData] = ...
-    visualizeSubdivision(Subdomains, ProblemDescr, ndim)
+    visualizeSubdomains(Subdomains, ProblemDescr, ndim)
                                                    
     global ncalls
                                                    
@@ -54,8 +54,8 @@ function [GlobalPoints, GlobalMesh, PointData] = ...
 
             for icomp = 1 : size(Subdomains{iclass},1)
 
-                % create some auxiliary points inside the subdomains to ease
-                % triangulation
+                % Create some auxiliary points inside the subdomains to
+                % ease triangulation.
                 
                 % remove all NaNs
                 bdryPoints = Subdomains{iclass}{icomp}(~isnan(Subdomains{iclass}{icomp}(:,1)),:);
@@ -74,24 +74,25 @@ function [GlobalPoints, GlobalMesh, PointData] = ...
                 mean = min(PointsAux) + 0.5*sizes;
                 mean = mean*V';
                 
-                % this is on [-0.5, 0.5]^ndim
+                % This is on [-0.5, 0.5]^ndim.
                 PointSetVis = CreateHaltonSet(nInnerPoints, ndim) - 0.5;
 
-                % transform the points according to the bounding box
-                % we want points inside, therefore the factor 0.85
+                % Transform the points according to the bounding box.
+                % We want points inside, therefore the factor 0.85.
                 PointSetVis = PointSetVis*0.85*diag(sizes)*V' + kron(mean, ones(nInnerPoints,1));
 
-                % test, if these points are really inside the subdomain
+                % Test, if these points are really inside the subdomain.
                 ClassOfPointsVis = computeClassification(PointSetVis, ProblemDescr);
 
                 % MATLAB is one-based, however, in paraview, we need it 0-based
                 aux = size(Subdomains{iclass}{icomp},1)-1;
 
-                % if the components are not simply connected, there are several
-                % boundary components. Following a MATLAB convention, they are
-                % separated by NaNs in the node vector. Unfortunately, Mesh2D
-                % does not follow that convention such we have to remove all
-                % NaNs and build the edge vectors accordingly.
+                % If the components are not simply connected, there are
+                % several boundary components. Following a MATLAB
+                % convention, they are separated by NaNs in the node
+                % vector. Unfortunately, Mesh2D does not follow that
+                % convention such we have to remove all NaNs and build the
+                % edge vectors accordingly.
                 IdxNaNs = find(isnan(Subdomains{iclass}{icomp}(:,1)));
                 IdxNaNs = [0 IdxNaNs aux+1];
                 edges = [];
@@ -100,30 +101,25 @@ function [GlobalPoints, GlobalMesh, PointData] = ...
                     edges = [edges; IdxNaNs(i+1) - i, IdxNaNs(i)+2-i];
                 end
 
-                % get all points in the current class
+                % Get all points in the current class.
                 AuxPoints = PointSetVis(ClassOfPointsVis == iclass, :);
 
-                % take the ones which are inside the polygon approximating
-                % the boundary of the subdomain
+                % Take the ones which are inside the polygon approximating
+                % the boundary of the subdomain.
                 in = inpolygon(AuxPoints(:,1), AuxPoints(:,2), ...
                                Subdomains{iclass}{icomp}(:,1), ...
                                Subdomains{iclass}{icomp}(:,2));
                 AuxPoints = AuxPoints(in,:);
 
-                % remove the NaNs and add the inner points
+                % Remove the NaNs and add the inner points.
                 SubdomainMeshVerts{iclass}{icomp} = Subdomains{iclass}{icomp}(~isnan(Subdomains{iclass}{icomp}(:,1)),:);
                 SubdomainMeshVerts{iclass}{icomp} = [SubdomainMeshVerts{iclass}{icomp}(1:end-1,:); AuxPoints];
 
-                % Workaround should be obsolete for mesh2D 3.2.2
                 % call external library for meshing (workaround for a bug in
                 % mesh2D which cannot deal with a simple triangle as input
-    %            if (size(SubdomainMeshVerts{iclass}{icomp},1) > 3)
-                    [SubdomainMeshVerts{iclass}{icomp}, ~, ...
-                     SubdomainMeshConnect{iclass}{icomp}, ~] = ...
-                     refine2(SubdomainMeshVerts{iclass}{icomp}, edges);
-    %            else
-    %                SubdomainMeshConnect{iclass}{icomp} = [1 2 3];
-    %            end
+                [SubdomainMeshVerts{iclass}{icomp}, ~, ...
+                 SubdomainMeshConnect{iclass}{icomp}, ~] = ...
+                 refine2(SubdomainMeshVerts{iclass}{icomp}, edges);
 
                 nverts = nverts + size(SubdomainMeshVerts{iclass}{icomp},1);
                 ncells = ncells + size(SubdomainMeshConnect{iclass}{icomp},1);

@@ -5,9 +5,11 @@
 % derivative in a least-squares approximation. Following Morozov, we
 % choose the regularisation such that the maximal residual is approx.
 % FaultApproxParams.abstolBisection.
-% These points are constructed such they have approximately the same 
-% distance as the points on PointsOnCurve, but at most
-% maxDistForSurfacePoints.
+% These points are constructed such that their distance is the minimum of
+% growthFactor*the average distance of the existing points,
+% fault_approx_params.max_dist_for_surface_points and the requirement that
+% the deviation from a straight line is at most (approximately)
+% fault_approx_params.err_max.
 %
 % Input:
 % - PointsOnCurve: points on a curve (must be ordered)
@@ -33,7 +35,7 @@
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
 function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ...
-    pointsOnCurveByExtrapolation(PointsOnCurve, numPointsNew, FaultApproxParams)
+    extrapolateOnFaultLine(PointsOnCurve, numPointsNew, FaultApproxParams)
     
     growthFactor = 1.5;
     
@@ -86,8 +88,8 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
     % lmax = sqrt{vmax}/c. Inserting vmax yields
     % lmax = sqrt{-16cd/vmin}/c = 4 sqrt{d/(-c vmin)}
         
-    % estimating curvature is possible only for more than two points on the
-    % fault line and two dimensions
+    % Estimating curvature is possible only for more than two points on the
+    % fault line and two dimensions.
     if (numPointsOnCurve > 2 && ndim == 2)
 
         % estimate curvature (with safety factor). As PointsOnCurve are mean
@@ -103,8 +105,8 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
             lmax = 1e10;
         end
         
-    % limiting step size based upon curvature does not work, if only two
-    % points on the fault line are known    
+    % Limiting step size based upon curvature does not work, if only two
+    % points on the fault line are known.
     else
         lmax = 1e10;
     end
@@ -145,7 +147,7 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
         BTB = B'*B;
         rhs = A'*PointsRot(:,2);
 
-            % estimation of regularisation parameter due to Morozov
+        % estimation of regularisation parameter due to Morozov
         expmin = -16;
         expmax = 2;
 
@@ -185,7 +187,7 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
     
     trueDist = vecnorm(NewPointsOnCurve- PointsOnCurve(numPointsOnCurve,:),2,2);
     
-    % it may happen that the true distance of the extrapolated points to
+    % It may happen that the true distance of the extrapolated points to
     % the existing ones is too large, as the arc length on the curve is
     % much greater than the distance of the parameters. In this case, we
     % adjust the parameters accordingly. For the sake of simplicity, we
@@ -198,7 +200,7 @@ function [NewPointsOnCurve, avgDist, ExtraPars, DataPars, Q, xmean, coeffs] = ..
 
         iiter = 1;
 
-        % the maximal number of iterations should never be reached in
+        % The maximal number of iterations should never be reached in
         % practical examples. If so, the adjusted values are at least
         % better than the original ones.
         while iiter < 20

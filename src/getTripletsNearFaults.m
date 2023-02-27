@@ -2,7 +2,7 @@
 % For details, we refer to "Detecting and approximating decision boundaries
 % in low dimensional spaces". We sketch our algorithm in what follows:
 % 1) building block initialize: We subdivide the set of barycentres
-%    according to class and search for any barycenter in class iclass
+%    according to class and search for any barycentre in class iclass
 %    its nearest neighbour in class jclass. The line from iclass to
 %    jclass is supposed to intersect the fault line/surface separating
 %    subset iclass from subset jclass. We find two points, one in class
@@ -29,7 +29,7 @@
 %    points according to (estimated) curvature.
 % 
 % Input:
-% - Barycenters: (m x d)-array containing the cartesian coordinates of
+% - barycentres: (m x d)-array containing the cartesian coordinates of
 %   the barycentres; d: dimension, m: number of points
 % - PointSet: (m x d)-array containing the cartesian coordinates of
 %   the sampling points; d: dimension, m: number of sampling points
@@ -64,7 +64,7 @@
 % This file is part of faultapprox-matlab
 % (https://github.com/mgrajewski/faultapprox-matlab)
 function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, NormalsSurface] = ...
-    getTripletsNearFaults(Barycenters, PointSet, ClassOfBarys, ...
+    getTripletsNearFaults(Barycentres, PointSet, ClassOfBarys, ...
                           ClassOfPoints, ProblemDescr, FaultApproxParams)
 
     % initialise with dummy return values
@@ -76,7 +76,7 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
     global ExtendedStats;
     
     % number of barycentres
-    nbarys = size(Barycenters, 1);
+    nbarys = size(Barycentres, 1);
 
     % dimension
     ndim = size(PointSet, 2);
@@ -99,7 +99,7 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
     
     NormalsSurface = 0;
     
-    % get the opposite mapping: Class value -> i
+    % Get the opposite mapping: Class value -> i
     ClassValsInv = zeros(1, max(ClassVals));
     ClassValsInv(ClassVals) = 1:nclasses;
         
@@ -114,7 +114,7 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
     % number of points on fault line PointSetsSurface{i,j}
     NumPointsSurf = cell(nclasses, nclasses);
 
-    % we preallocate the arrays in order to avoid dynamic resizing. We
+    % We preallocate the arrays in order to avoid dynamic resizing. We
     % shorten them later.
     for iclass = 1:nclasses
         for jclass = 1:iclass -1
@@ -141,22 +141,22 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
                   int2str(idxIclass)])
         end
         
-        % all points and barycenters not in the current class
+        % all points and barycentres not in the current class
         PointsNotInClass = [PointSet(ClassOfPoints~= idxIclass,:); ...
-                            Barycenters(ClassOfBarys ~= idxIclass, :)];
+                            Barycentres(ClassOfBarys ~= idxIclass, :)];
 
         ClassOfPointsAux = [ClassOfPoints(ClassOfPoints~= idxIclass); ...
                             ClassOfBarys(ClassOfBarys ~= idxIclass)];
 
         % all barycentres in current class
-        BarycentersInClass = Barycenters(ClassOfBarys == idxIclass,:);
+        BarycentresInClass = Barycentres(ClassOfBarys == idxIclass,:);
         
-        nbarysInClass = size(BarycentersInClass, 1);
+        nbarysInClass = size(BarycentresInClass, 1);
         npointsNotInClass =size(PointsNotInClass, 1);
 
         DistMatAux = zeros(npointsNotInClass, nbarysInClass, ndim);
         for jclass = 1: nbarysInClass
-            DistMatAux(:,jclass,:) = PointsNotInClass-BarycentersInClass(jclass,:);
+            DistMatAux(:,jclass,:) = PointsNotInClass-BarycentresInClass(jclass,:);
         end
     
         DistMatAux = DistMatAux.^2;
@@ -173,14 +173,14 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
         IdxNextPointNotInClass = IidxNearestNeighbour(1, 1:nbarysInClass)';
             
         ClassNextPointNotInClass = ClassOfPointsAux(IdxNextPointNotInClass);
-        PointInClass = BarycentersInClass(1:nbarysInClass,:);
+        PointInClass = BarycentresInClass(1:nbarysInClass,:);
         PointNotInClass = PointsNotInClass(IdxNextPointNotInClass,:);
         idxIclassVec = idxIclass*ones(nbarysInClass,1);
 
         [PointsLeftFinal, PointsRightFinal, Finished] = ...
-            computeSurfacePoints(PointInClass, PointNotInClass, ...
-                                 idxIclassVec, ClassNextPointNotInClass, ...
-                                 ProblemDescr, FaultApproxParams);
+            tripletsByBisection(PointInClass, PointNotInClass, ...
+                                idxIclassVec, ClassNextPointNotInClass, ...
+                                ProblemDescr, FaultApproxParams);
 
         for ipoint = 1: nbarysInClass
             % index of the point not in the current class, but nearest to
@@ -203,8 +203,8 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
         end
     end
     
-    % last part: remove duplicates and clusters. Two points are considered
-    % duplicate if closer than FaultApproxParams.eps.
+    % Last part of iniapprox: remove duplicates and clusters. Two points
+    % are considered duplicate if closer than FaultApproxParams.eps.
     % Moreover, remove almost duplicates: points that are closer to their
     % nearest neighbour than minDistFactor*maxDistForSurfacePoints are
     % collected into clusters wich are then reduced according to their
@@ -258,8 +258,8 @@ function [PointSetsSurface, LeftDomainStart, LeftDomainEnd, bsuccessful, Normals
         ExtendedStats.nPointsSurf{end+1} = NumPointsSurf;
     end
 
-    % consistency check: if there are no points near any fault line at all
-    % (for whatever reason), skip the computation
+    % Consistency check: if there are no points near any fault line at all
+    % (for whatever reason), skip the computation.
     pointsOnFaultLines = false;
     for iclass = 1: nclasses -1
         for jclass = iclass + 1: nclasses

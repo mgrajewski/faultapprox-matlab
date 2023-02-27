@@ -8,8 +8,9 @@
 % parameter t along with the corresponding points xmin and xmax.
 %
 % Input:
-% - tmin, tmax: lower and upper bound for the parameter of the intersection
-% - xmin, xmax: corresponding points in global coordinates
+% - tmin, tmax: lower and upper bound for the parameter value of the
+%   intersection
+% - xmin, xmax: corresponding points given in global coordinates
 % - coeffs: coefficients of the extrapolating polynomial
 % - Q, xmean: orthogonal matrix and origin describing the local coordinate
 %   system
@@ -65,7 +66,7 @@ function [xnew, iedge] = extraNewPointOnDomainBdry(tmin, tmax, xmin, xmax, ...
     iauxMin = [4 1 5];
     iauxMax = [2 3 6];
     
-    % points closer as epstol are regarded as identical
+    %  Points closer than epstol are considered identical.
     epstol = FaultApproxParams.eps;
 
     ndim = size(xmin,2);
@@ -75,8 +76,9 @@ function [xnew, iedge] = extraNewPointOnDomainBdry(tmin, tmax, xmin, xmax, ...
     iiter = 1;
     while iiter < 10
 
-        % the 0.5 is just a safety factor (iterating one time more does
-        % not increase the number of function evaluations)
+        % The factor 0.5 in the following condition is just a safety factor
+        % (iterating one time more does not increase the number of function
+        % evaluations).
         if (dist < 0.5*FaultApproxParams.abstolBisection)
             break
         else

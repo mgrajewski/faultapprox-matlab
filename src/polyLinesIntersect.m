@@ -65,17 +65,17 @@ function doIntersect = polyLinesIntersect(Poly1, Poly2)
         LineSegs1 = LineSegs1./normLineSegs1;
 
         for iseg = 1: numPoints1-1
-
-            % subsequent segments never intersect, thus start the loop at
-            % iseg+2
             for jseg = 1:numPoints2-1
-                % if greater 0: all points of the other segment on the same
-                % side
+                % If greater 0: all points of the other segment on the same
+                % side.
                 aux1 = (LineSegs1(iseg,1)*(Poly1(iseg,2) - Poly2(jseg,2)) - ...
                         LineSegs1(iseg,2)*(Poly1(iseg,1) - Poly2(jseg,1))) * ...
                        (LineSegs1(iseg,1)*(Poly1(iseg,2) - Poly2(jseg+1,2)) - ...
                         LineSegs1(iseg,2)*(Poly1(iseg,1) - Poly2(jseg+1,1)));
 
+                % Exclude the geometric situation shown above: test, if i
+                % and i+1 are on different sides with respect to the line
+                % segment from j to j+1.
                 if (aux1 < -epsLoc)
                     aux2 = (LineSegs2(jseg,1)*(Poly2(jseg,2) - Poly1(iseg,2)) - ...
                             LineSegs2(jseg,2)*(Poly2(jseg,1) - Poly1(iseg,1))) * ...
