@@ -3,7 +3,8 @@
 
 % Author: Matthias Grajewski (grajewski@fh-aachen.de)
 % This file is part of faultapprox-matlab
-% (https://github.com/mgrajewski/faultapprox-matlab)function ClassOfPoints = testFuncFaultApprox2D_15(PointSet, ProblemDescr)
+% (https://github.com/mgrajewski/faultapprox-matlab) 
+function ClassOfPoints = testFuncFaultApprox2D_15(PointSet, ProblemDescr)
 
     % simple 2D example: part of a sphere
     ClassOfPoints = ones(size(PointSet,1),1);
