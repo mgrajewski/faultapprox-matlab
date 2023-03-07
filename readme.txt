@@ -1,10 +1,11 @@
+# faultapprox-matlab
 This is a Matlab library for detecting and approximation decision lines/faults in 2D and 3D.
 We describe the underlying algorithm in "Detecting and approximating decision boundaries in low dimensional spaces", which is available at arXiv.org (http://arxiv.org/abs/2302.08179).
 
 This library requires the Matlab library mesh2D by Darren Engwirda (https://github.com/dengwirda/mesh2d).
 There is no explicit documentation yet, but all functions are documented in the source code.
 
-Organisation of faultapprox-matlab
+##Organisation of faultapprox-matlab
 
 ├── src  : the actual Matlab implementation of the algorithm. The "main" function is faultApprox.m.
 ├── tests: ┐
