@@ -3,14 +3,16 @@
 % The routine works in 2D or 3D. In 2D, triangular, quadrilateral and
 % (partially) polygonal meshes are supported, in 3D tetrahedral and
 % hexehadral meshes for volumes and triangular meshes for surfaces.
-% The mesh may be unstructured. At least in 2D, mixed meshes are supported.
+% The mesh may be unstructured. Mixed meshes are supported.
 % 
 % Input:
 % - PointSet(numberOfDataPoints, ndim): numberOfDataPoints stands for
 %   the number of data points and ndim \in {2,3} for the dimension of the
 %   data.
-% - triang(numberOfCells, pointsPerCell+1): represents the triangulation
-%   corresponding to PointSet
+% - triang(numberOfCells, maxPointsPerCell+1): represents the triangulation
+%   corresponding to PointSet. The indices of the points are 0-based; the
+%   last column in this array contains the number of points of the current
+%   cell.
 % - PointData(numberOfDataPoints, numberOfDataSets): numberOfDataSets
 %   represents the number of data sets in the vtu-file
 % - PointDataNames = {'NameOfSet1'; 'NameOfSet2', ...}: cell array
