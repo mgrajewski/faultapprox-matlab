@@ -81,7 +81,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         % PointSetsSurface{jclass, iclass} both contain points near the
         % fault line between the classes iclass and jclass. The points of 
         % the former one belong to iclass, the points of the latter one to
-        % jclass. While this is worthwile for computing approximations of 
+        % jclass. While this is worthwhile for computing approximations of 
         % the components of a fault line, it is not for providing a
         % consistent subdivision of the domain by polygons which we intend
         % here. Therefore, we take the mean of these pairs of points.
@@ -670,7 +670,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         % course, this is correct only if the current subdomain is the only
         % one.
         % However, testing for the need of flipping is necessarily heuristic.
-        % We choose the point to test with as follow: For two consecutive
+        % We choose the point to test with as follows: For two consecutive
         % boundary points, we take the mean and add to that a scaled (intended)
         % inner normal vector. If this point is in fact inside the domain,
         % class iclass is inside.
@@ -687,7 +687,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
         % presence of cusps. Making the normal vector too small to prevent this
         % failure mode may lead to numerical instabilities.
         % To minimize the chance for failure, we consider
-        % two points instead one one. In the case of contradicting results (one
+        % two points instead of one. In the case of contradicting results (one
         % indicates to flip, the other not to flip), we consider a third point
         % and decide by majority.
         % Note that we test with respect to the discrete approximations of a

@@ -1,4 +1,4 @@
-% Export2VTU exports pointwise data to a vtu-file which can be read in by
+% Export2VTU exports point wise data to a vtu-file which can be read in by
 % e.g. Paraview.
 % The routine works in 2D or 3D. In 2D, triangular, quadrilateral and
 % (partially) polygonal meshes are supported, in 3D tetrahedral and
