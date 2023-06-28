@@ -173,7 +173,7 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
             stepSize = max(0.95*FaultApproxParams.abstolBisection, ...
                            0.5* min(alpha*avg_dist, ...
                                     3*FaultApproxParams.abstolBisection*(relDist.^2+1)));
-                    
+                                
             PointLeft = NewPointOnFault + stepSize*NormalVecLoc;
             PointLeft = min(max(ProblemDescr.Xmin + epstol, PointLeft), ...
                             ProblemDescr.Xmax - epstol);
@@ -484,7 +484,11 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
     
                 % Compute the distance to currently the last point on the
                 % fault line If this distance is extremely small, replace
-                % this point by the new one.
+                % this point by the new one, if this is the last point.
+                % Usually, the distance to the currently last point becomes
+                % very small, if a fault line ends and the step size has
+                % been reduced very much not to overshoot the end of the
+                % fault.
                 LastCurrentPoint = PointsOnFault(end,:);
                 if ClassPointsOk(1) ==ClassVals(iclass)
                     distToNewPoint = norm(LastCurrentPoint - PointLeft,2);
@@ -492,9 +496,10 @@ function [IdxPointsEnlarged, LeftDomain, npoints, PointsIclass, ...
                     distToNewPoint = norm(LastCurrentPoint - PointRight,2);
                 end
     
-                % The new point is sufficiently far away from the last
-                % known one: add it.
-                if (distToNewPoint > avg_dist*FaultApproxParams.minDistFactor)
+                % The new point is the last one or it is not, but
+                % sufficiently far away from the last known one: add it.
+                if ((~isOutsideSub && ~isOutsideDomain) || ...
+                    ((isOutsideSub || isOutsideDomain) && distToNewPoint > avg_dist*FaultApproxParams.minDistFactor))
                     npoints = npoints + 1;
                     iidxAdd = npoints;
     
