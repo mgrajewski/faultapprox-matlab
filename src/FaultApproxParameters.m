@@ -51,7 +51,7 @@ classdef FaultApproxParameters
         abstolBisection = 1e-3;
 
         % maximum number of bisection iterations
-        maxiterBisection = 15;
+        maxiterBisection = 60;
         
         % There may be a large distance between neighbouring points
         % near a fault line. We try to fill such gaps by adding points.
