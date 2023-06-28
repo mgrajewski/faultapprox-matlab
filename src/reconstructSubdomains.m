@@ -123,7 +123,7 @@ function [Subdomains, succeeded] = reconstructSubdomains(PointSetsSurface, LeftD
             % Something ends inside but nothing starts inside or something
             % starts inside but nothing ends inside.
             if (any(iend(:) == 0) && ~any(istart(:) == 0)) || (~any(iend(:) == 0) && any(istart(:) == 0))
-                warnMsg = ['Some components of the boundary of class ' int2str(ClassVals(iclass)) 'are missing.'];
+                warnMsg = ['Some components of the boundary of class ' int2str(ClassVals(iclass)) ' are missing.'];
                 warning(warnMsg);
 
                 warnMsg = 'Reconstruction of subdomains failed. Consider taking a finer initial point set.';
